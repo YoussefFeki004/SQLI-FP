@@ -1,16 +1,38 @@
 let allFindings = [];
 let filteredFindings = [];
-const modal = new bootstrap.Modal(document.getElementById('detailModal'));
-const uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
+let modal = null;
+let uploadModal = null;
+
+// Initialize modals after DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    modal = new bootstrap.Modal(document.getElementById('detailModal'));
+    uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
+    console.log('Modals initialized');
+});
 
 function openUploadModal() {
-    document.getElementById('uploadError').classList.add('d-none');
-    document.getElementById('xmlFile').value = '';
-    uploadModal.show();
+    const errorDiv = document.getElementById('uploadError');
+    if (errorDiv) {
+        errorDiv.classList.add('d-none');
+    }
+    const xmlFile = document.getElementById('xmlFile');
+    if (xmlFile) {
+        xmlFile.value = '';
+    }
+    if (uploadModal) {
+        uploadModal.show();
+    } else {
+        console.error('Upload modal not initialized');
+    }
 }
 
 function handleFileUpload() {
     const fileInput = document.getElementById('xmlFile');
+    if (!fileInput) {
+        console.error('File input not found');
+        return;
+    }
+    
     const file = fileInput.files[0];
 
     if (!file) {
@@ -23,25 +45,37 @@ function handleFileUpload() {
         return;
     }
 
+    console.log('Loading file:', file.name);
     const reader = new FileReader();
     reader.onload = (e) => {
         try {
             allFindings = XMLParser.parseXML(e.target.result);
+            console.log('Parsed findings:', allFindings.length);
             filteredFindings = [...allFindings];
-            uploadModal.hide();
+            if (uploadModal) {
+                uploadModal.hide();
+            }
             renderDashboard();
             renderFindings();
         } catch (error) {
+            console.error('Parse error:', error);
             showUploadError('Error parsing XML: ' + error.message);
         }
+    };
+    reader.onerror = (e) => {
+        console.error('File read error:', e);
+        showUploadError('Error reading file');
     };
     reader.readAsText(file);
 }
 
 function showUploadError(message) {
     const errorDiv = document.getElementById('uploadError');
-    errorDiv.textContent = message;
-    errorDiv.classList.remove('d-none');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.classList.remove('d-none');
+        console.log('Error shown:', message);
+    }
 }
 
 function renderDashboard() {
@@ -189,7 +223,9 @@ function showDetails(index) {
     `;
 
     body.innerHTML = html;
-    modal.show();
+    if (modal) {
+        modal.show();
+    }
 }
 
 function renderTestStep(step, stepIndex) {
@@ -316,8 +352,17 @@ function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, m => map[m]);
 }
 
-// Event Listeners
-document.getElementById('searchUrl').addEventListener('input', applyFilters);
-document.getElementById('filterStatus').addEventListener('change', applyFilters);
-document.getElementById('filterMethod').addEventListener('change', applyFilters);
-document.getElementById('filterConfidence').addEventListener('change', applyFilters);
+// Event Listeners - Add after DOM loads
+document.addEventListener('DOMContentLoaded', function() {
+    const searchUrl = document.getElementById('searchUrl');
+    const filterStatus = document.getElementById('filterStatus');
+    const filterMethod = document.getElementById('filterMethod');
+    const filterConfidence = document.getElementById('filterConfidence');
+    
+    if (searchUrl) searchUrl.addEventListener('input', applyFilters);
+    if (filterStatus) filterStatus.addEventListener('change', applyFilters);
+    if (filterMethod) filterMethod.addEventListener('change', applyFilters);
+    if (filterConfidence) filterConfidence.addEventListener('change', applyFilters);
+    
+    console.log('Event listeners attached');
+});
